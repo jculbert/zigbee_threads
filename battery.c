@@ -7,6 +7,10 @@
 
 // IADC code copied from https://github.com/SiliconLabs/peripheral_examples/blob/master/series2/iadc/iadc_single_interrupt/src/main_single_interrupt.c
 
+#include "app_config.h"
+
+#if defined(BATTERY_TYPE_LITHIUM) || defined (BATTERY_TYPE_AAA_NIMH)
+
 #include PLATFORM_HEADER
 
 #include "em_cmu.h"
@@ -19,7 +23,6 @@
 #include "app/framework/util/attribute-table.h"
 
 static uint32_t endpoint;
-static uint32_t nominal_mv;
 static uint32_t refresh_minutes;
 static osThreadId_t thread_id;
 static const uint32_t INTERRUPT_FLAG = 1;
@@ -124,8 +127,12 @@ static uint8_t get_zigbee_battery_percent(uint32_t vbat_mv)
 {
     typedef struct { float v; int p; } vp_t;
 
-    // Curve for NiMH
-    static const vp_t curve_nimh[] = {
+#ifdef BATTERY_TYPE_AAA_NIMH
+    // divided by 2000 because vbat_mv is for two batteries
+    float vbat = ((float)vbat_mv) / 2000.0f;
+
+    // Curve for AAA_NiMH
+    static const vp_t curve[] = {
         {1.45f, 100},
         {1.35f,  90},
         {1.30f,  80},
@@ -137,8 +144,11 @@ static uint8_t get_zigbee_battery_percent(uint32_t vbat_mv)
         {1.00f,   0}
     };
 
+#elif defined(BATTERY_TYPE_LITHIUM)
+    float vbat = ((float)vbat_mv) / 1000.0f;
+
     // Curve for Lithium
-    static const vp_t curve_lithium[] = {
+    static const vp_t curve[] = {
         {3.00f, 100},
         {2.95f,  90},
         {2.90f,  80},
@@ -148,23 +158,13 @@ static uint8_t get_zigbee_battery_percent(uint32_t vbat_mv)
         {2.70f,  10},
         {2.50f,   0},
     };
+#endif
 
-    uint32_t curve_len;
-    vp_t *curve;
-    float vbat;
-    if (battery_type_lithium) {
-        curve = curve_lithium;
-        curve_len = sizeof(curve_lithium) / sizeof(curve_lithium[0]);
-        vbat = ((float)vbat_mv) / 1000.0f;
-    } else {
-        curve = curve_nimh;
-        curve_len = sizeof(curve_nimh) / sizeof(curve_nimh[0]);
-        vbat = ((float)vbat_mv) / 2000.0f; // vbat_mv is 2x battery mv for nimh
-    }
+    uint32_t curve_len = sizeof(curve) / sizeof(curve[0]);
 
     if (vbat >= curve[0].v) return 200;
     if (vbat <= curve[curve_len-1].v) return 0;
-    for (uint32_t i = 0; i < curve_len; ++i) {
+    for (uint32_t i = 0; i < (curve_len-1); ++i) {
         float v1 = curve[i].v, v2 = curve[i+1].v;
         if (vbat <= v1 && vbat >= v2) {
             // interpolate between the two points
@@ -216,10 +216,9 @@ static void thread(void *p_arg)
     }
 }
 
-void battery_init(uint32_t _endpoint, uint32_t _nominal_mv, uint32_t _refresh_minutes)
+void battery_init(uint32_t _endpoint, uint32_t _refresh_minutes)
 {
     endpoint = _endpoint;
-    nominal_mv = _nominal_mv;
     refresh_minutes = _refresh_minutes;
 
     static osThreadAttr_t thread_attr;
@@ -308,3 +307,5 @@ int aaa_percent(float v) {
 }
 
 #endif
+
+#endif // defined(BATTERY_TYPE_LITHIUM) || defined (BATTERY_TYPE_AAA_NIMH)

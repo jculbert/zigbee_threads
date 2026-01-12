@@ -29,6 +29,8 @@
 
 #include "network-steering.h"
 
+#include "app_config.h"
+
 extern void sl_zigbee_wakeup_app_framework_task(void);
 
 //#define led_turn_on(led) sl_led_turn_on(led)
@@ -58,9 +60,6 @@ static const uint32_t NETWORK_MONITOR_PERIOD_SECS = 60;
 static sl_zigbee_af_event_t led_event;
 static bool led_on = false;
 static uint32_t led_pulse_cnt = 0;
-
-extern void water_detector_init(uint32_t _endpoint);
-extern void battery_init(uint32_t _endpoint, uint32_t _nominal_mv, uint32_t _refresh_minutes);
 
 // Event handler that pulses the led_pulse_cnt times
 static void led_event_handler(sl_zigbee_af_event_t *event)
@@ -139,8 +138,20 @@ static void button_isr_event_handler(sl_zigbee_af_event_t *event)
 
 void sli_zigbee_app_rtos_task_init_cb(void)
 {
-    water_detector_init(1);
-    battery_init(1, 4000, 1);
+#ifdef WATER_DETECTOR_ENDPOINT
+    extern void water_detector_init(uint32_t _endpoint);
+    water_detector_init(WATER_DETECTOR_ENDPOINT);
+#endif
+
+#ifdef CONTACT_ENDPOINT
+    extern void contact_init(uint32_t _endpoint);
+    contact_init(CONTACT_ENDPOINT);
+#endif
+
+#ifdef BATTERY_ENDPOINT
+    extern void battery_init(uint32_t _endpoint, uint32_t refresh_minutes);
+    battery_init(BATTERY_ENDPOINT, 6*60);
+#endif
 
     tick_rate = osKernelGetTickFreq();
 
