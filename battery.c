@@ -225,7 +225,7 @@ void battery_init(uint32_t _endpoint, uint32_t _refresh_minutes)
     __ALIGNED(8) static uint8_t stack[2000];
     __ALIGNED(4) static uint8_t task_cb[osThreadCbSize];
 
-    thread_attr.name = "Water Detector";
+    thread_attr.name = "Battery";
     thread_attr.stack_mem = stack;
     thread_attr.stack_size = sizeof(stack);
     thread_attr.cb_mem = task_cb;

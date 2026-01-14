@@ -1,10 +1,3 @@
-/*
- * water_detector.c
- *
- *  Created on: Jun. 9, 2025
- *      Author: jeff
- */
-
 #include PLATFORM_HEADER
 #ifdef SL_COMPONENT_CATALOG_PRESENT
 #include "sl_component_catalog.h"
@@ -66,7 +59,7 @@ static void read_hall()
 
 static void update_attribute()
 {
-    uint8_t state = (uint8_t) GPIO_PinInGet(SL_EMLIB_GPIO_INIT_HALL_INPUT_PORT, SL_EMLIB_GPIO_INIT_HALL_INPUT_PIN) == 0 ? false: true;
+    uint8_t state = (uint8_t) GPIO_PinInGet(SL_EMLIB_GPIO_INIT_HALL_INPUT_PORT, SL_EMLIB_GPIO_INIT_HALL_INPUT_PIN);
     sl_zigbee_af_status_t result = sl_zigbee_af_write_server_attribute(endpoint, ZCL_OCCUPANCY_SENSING_CLUSTER_ID, ZCL_OCCUPANCY_ATTRIBUTE_ID,
         &state, ZCL_BITMAP8_ATTRIBUTE_TYPE);
     sl_zigbee_app_debug_println("update state result=%d, state=%d", result, state);
@@ -81,7 +74,7 @@ static void set_reporting_table()
         sli_zigbee_af_reporting_get_entry(i, &entry);
         if(entry.endpoint == endpoint && entry.clusterId == ZCL_OCCUPANCY_SENSING_CLUSTER_ID)
         {
-            //log_debug("r %d %d", entry.attributeId, entry.data.reported.minInterval);
+            //sl_zigbee_app_debug_println("r %d %d", entry.attributeId, entry.data.reported.minInterval);
             if (entry.data.reported.minInterval != 1)
             {
                 sl_zigbee_app_debug_println("updating rep int to 1");
@@ -106,7 +99,9 @@ static void thread(void *p_arg)
     while(true)
     {
         osThreadFlagsWait(INTERRUPT_FLAG, osFlagsWaitAny, refresh_period);
+        set_reporting_table();
         update_attribute();
+        sl_zigbee_wakeup_app_framework_task();
     }
 }
 

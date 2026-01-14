@@ -5,6 +5,8 @@
  *      Author: jeff
  */
 
+#ifdef WATER_DETECTOR_ENDPOINT
+
 #include PLATFORM_HEADER
 #ifdef SL_COMPONENT_CATALOG_PRESENT
 #include "sl_component_catalog.h"
@@ -139,3 +141,4 @@ void water_detector_init(uint32_t _endpoint)
     init_ACMP();
 }
 
+#endif // WATER_DETECTOR_ENDPOINT
