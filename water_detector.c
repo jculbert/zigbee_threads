@@ -5,6 +5,8 @@
  *      Author: jeff
  */
 
+#include "app_config.h"
+
 #ifdef WATER_DETECTOR_ENDPOINT
 
 #include PLATFORM_HEADER

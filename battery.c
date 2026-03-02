@@ -9,7 +9,7 @@
 
 #include "app_config.h"
 
-#if defined(BATTERY_TYPE_LITHIUM) || defined (BATTERY_TYPE_AAA_NIMH)
+#if defined(BATTERY_TYPE_LITHIUM) || defined(BATTERY_TYPE_AAA_NIMH) || defined(BATTERY_TYPE_AAA_ALKALINE)
 
 #include PLATFORM_HEADER
 
@@ -144,6 +144,26 @@ static uint8_t get_zigbee_battery_percent(uint32_t vbat_mv)
         {1.00f,   0}
     };
 
+#elif defined(BATTERY_TYPE_AAA_ALKALINE)
+    // divided by 2000 because vbat_mv is for two batteries
+    float vbat = ((float)vbat_mv) / 2000.0f;
+
+    static const vp_t curve[] = {
+        {1.60,100},
+        {1.50,95},
+        {1.45,90},
+        {1.40,80},
+        {1.35,70},
+        {1.30,60},
+        {1.25,50},
+        {1.20,40},
+        {1.15,30},
+        {1.10,20},
+        {1.05,10},
+        {1.00,5},
+        {0.90,0}
+    };
+
 #elif defined(BATTERY_TYPE_LITHIUM)
     float vbat = ((float)vbat_mv) / 1000.0f;
 
@@ -212,6 +232,7 @@ static void thread(void *p_arg)
         sl_zigbee_af_status_t result = sl_zigbee_af_write_server_attribute(endpoint,
             ZCL_POWER_CONFIG_CLUSTER_ID, ZCL_BATTERY_PERCENTAGE_REMAINING_ATTRIBUTE_ID,
             &battery_percent, ZCL_INT8U_ATTRIBUTE_TYPE);
+        sl_zigbee_wakeup_app_framework_task();
         sl_zigbee_app_debug_println("Battery update_state result=%d, batt_percent=%d", result, battery_percent);
     }
 }

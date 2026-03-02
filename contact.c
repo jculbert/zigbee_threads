@@ -1,3 +1,7 @@
+#include "app_config.h"
+
+#ifdef CONTACT_ENDPOINT
+
 #include PLATFORM_HEADER
 #ifdef SL_COMPONENT_CATALOG_PRESENT
 #include "sl_component_catalog.h"
@@ -131,5 +135,5 @@ void contact_init(uint32_t _endpoint)
     hall_init();
 }
 
-
+#endif // CONTACT_ENDPOINT
 
