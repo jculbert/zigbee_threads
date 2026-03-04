@@ -19,7 +19,6 @@
 
 #include "app/framework/util/attribute-table.h"
 #include "app/framework/plugin/reporting/reporting.h"
-#include "ias-zone-server.h"
 
 static uint32_t endpoint;
 static osThreadId_t thread_id;

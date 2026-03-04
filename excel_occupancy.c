@@ -9,6 +9,7 @@
 #include "sl_emlib_gpio_init_motion_input_config.h"
 
 #include "app/framework/util/attribute-table.h"
+#include "app/framework/plugin/reporting/reporting.h"
 
 #include "sl_udelay.h"
 
@@ -142,12 +143,15 @@ void update_occupancy(bool _occupancy)
     sl_zigbee_af_status_t result = sl_zigbee_af_write_server_attribute(endpoint, ZCL_OCCUPANCY_SENSING_CLUSTER_ID, ZCL_OCCUPANCY_ATTRIBUTE_ID,
         &occupancy, ZCL_BITMAP8_ATTRIBUTE_TYPE);
     sl_zigbee_app_debug_println("update_occupancy result=%d, state=%d", result, occupancy);
+    sl_zigbee_wakeup_app_framework_task();
 }
 
 static void thread(void *p_arg)
 {
     state = STATE_IDLE;
-    uint32_t timeout = 0;
+    // Since timeout=0 returns immediately, use a long timeout value for the "0" case
+    const uint32_t long_timeout = 30*60*osKernelGetTickFreq();
+    uint32_t timeout = long_timeout;
 
     set_reporting_table();
 
@@ -165,17 +169,17 @@ static void thread(void *p_arg)
                 GPIO_IntClear(1<<SL_EMLIB_GPIO_INIT_MOTION_INPUT_PIN); // Clear any spurious interrupt
                 GPIO_IntEnable(1<<SL_EMLIB_GPIO_INIT_MOTION_INPUT_PIN);
                 state = STATE_DELAY;
-                log_debug("PIR Delay");
+                sl_zigbee_app_debug_println("PIR Delay");
                 timeout = motion_timeout - motion_blanking_time; // Delay state until the end of delay period
                 break;
             case STATE_DELAY:
                 state = STATE_IDLE;
                 update_occupancy(false);
-                timeout = 0;
+                timeout = long_timeout;
                 break;
             case STATE_IDLE:
             default:
-                timeout = 0;
+                timeout = long_timeout;
                 break;
             }
         }
@@ -198,7 +202,7 @@ static void thread(void *p_arg)
 
 void excel_occupancy_init(uint32_t _endpoint, uint32_t motion_timeout_secs)
 {
-    motion_timeout = timeout_secs * osKernelGetTickFreq();
+    motion_timeout = motion_timeout_secs * osKernelGetTickFreq();
     motion_blanking_time = 3 * motion_timeout / 4;
 
     endpoint = _endpoint;
