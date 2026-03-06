@@ -41,7 +41,7 @@ static void thread(void *p_arg)
     }
 }
 
-void si7020_temp_battery_init(uint32_t _endpoint, uint32_t _period_minutes)
+void si7020_temp_init(uint32_t _endpoint, uint32_t _period_minutes)
 {
     endpoint = _endpoint;
     period_minutes = _period_minutes;

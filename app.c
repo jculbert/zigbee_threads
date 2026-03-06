@@ -158,6 +158,11 @@ void sli_zigbee_app_rtos_task_init_cb(void)
     battery_init(BATTERY_ENDPOINT, 6*60);
 #endif
 
+#ifdef SI7021_ENDPOINT
+    extern void si7020_temp_init(uint32_t _endpoint, uint32_t period_minutes);
+    si7020_temp_init(SI7021_ENDPOINT, SI7021_ENDPOINT_PERIOD_MINUTES);
+#endif
+
     tick_rate = osKernelGetTickFreq();
 
     sl_zigbee_af_isr_event_init(&button_isr_event, button_isr_event_handler);
