@@ -153,6 +153,11 @@ void sli_zigbee_app_rtos_task_init_cb(void)
     excel_occupancy_init(EXCEL_OCCUPANCY_ENDPOINT, EXCEL_OCCUPANCY_TIMEOUT_SECS);
 #endif
 
+#ifdef PAN_OCCUPANCY_ENDPOINT
+    extern void pan_occupancy_init(uint32_t _endpoint, uint32_t motion_timeout_secs);
+    pan_occupancy_init(PAN_OCCUPANCY_ENDPOINT, PAN_OCCUPANCY_TIMEOUT_SECS);
+#endif
+
 #ifdef BATTERY_ENDPOINT
     extern void battery_init(uint32_t _endpoint, uint32_t refresh_minutes);
     battery_init(BATTERY_ENDPOINT, 6*60);
