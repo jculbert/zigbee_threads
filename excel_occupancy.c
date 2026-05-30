@@ -13,6 +13,8 @@
 
 #include "sl_udelay.h"
 
+extern void sl_zigbee_wakeup_app_framework_task(void);
+
 static uint32_t endpoint;
 static osThreadId_t thread_id;
 

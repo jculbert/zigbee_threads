@@ -26,7 +26,6 @@ static uint32_t endpoint;
 static uint32_t refresh_minutes;
 static osThreadId_t thread_id;
 static const uint32_t INTERRUPT_FLAG = 1;
-static bool battery_type_lithium = true;
 
 void IADC_IRQHandler(void)
 {

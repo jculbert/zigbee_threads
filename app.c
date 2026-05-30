@@ -123,6 +123,7 @@ static void button_isr_event_handler(sl_zigbee_af_event_t *event)
         button_pressed_time = osKernelGetTickCount();
         break;
     case SL_SIMPLE_BUTTON_RELEASED:
+    {
         uint32_t dt = (osKernelGetTickCount() - button_pressed_time) / osKernelGetTickFreq();
         if (dt >= BUTTON_LONG_PRESS_SECS)
             //sl_zigbee_app_debug_println("Long press");
@@ -131,6 +132,7 @@ static void button_isr_event_handler(sl_zigbee_af_event_t *event)
             //sl_zigbee_app_debug_println("Short press");
             start_commissioning();
         break;
+    }
     default:
         break;
     }
